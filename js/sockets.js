@@ -38,26 +38,10 @@ function loadAssetsFromServer() {
   }
 }
 
-// // when new peer socket has been opend
+// new peer socket has been opend
 socket.on("new_peer", data => {
-  // const localConn = new RTCPeerConnection();
-  // const remoteConn = new RTCPeerConnection();
   console.log(`NEW PEER JOINED. assetsDownloaded: ${assetsDownloaded}`);
-  // localConn
-  //   .createOffer()
-  //   .then(offer =>
-  //     localConn.setLocalDescription(new RTCSessionDescription(offer))
-  //   )
-  //   .then(() => remoteConn.setRemoteDescription(localConn.localDescription))
-  //   .then(() => remoteConn.createAnswer())
-  //   .then(answer =>
-  //     remoteConn.setLocalDescription(new RTCSessionDescription(answer))
-  //   )
-  //   .then(() => localConn.setRemoteDescription(remoteConn.localDescription));
 
-  // const configuration = {
-  //   iceServers: [{ url: "stun:stun.l.google.com:19302" }]
-  // };
   const p = new Peer({ initiator: assetsDownloaded, trickle: false });
   p.on("error", err => {
     console.log(`error: ${err}`);
