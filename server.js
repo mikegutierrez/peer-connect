@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path");
-const PeerConnect = require('./peerConnect.js');
+const peerConnect = require('./peerConnect.js');
 
 // App setup
 const PORT = process.env.PORT || 8080;
@@ -33,4 +33,4 @@ const peerConfig = {
   foldLoading: true
 };
 
-PeerConnect(peerConfig, server);
+peerConnect(peerConfig, server);

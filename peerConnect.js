@@ -1,5 +1,22 @@
+/**
+ * Module dependencies.
+ */
+
 const socket = require("socket.io");
 const fetch = require("node-fetch");
+
+/**
+ * Module exports.
+ */
+
+module.exports = PeerConnect;
+
+/**
+ * PeerConnect constructor.
+ *
+ * @param {Object} options
+ * @param {http.Server|Object} http server
+ */
 
 function PeerConnect(config, server) {
   // DEFAULT CONFIGURABLES
@@ -37,29 +54,29 @@ function PeerConnect(config, server) {
     // fetch request to IP API to determine location (longitude, latitude)
     // save location to activeClients
     fetch(`http://freegeoip.net/json/${cip}`)
-    .then(res => res.json())
-    .then(json => {
-      const location = {
-        lgn: json.longitude,
-        lat: json.latitude,
-        city: json.city,
-        zipCode: json.zip_code,
-        regionCode: json.region_code,
-        country: json.country_code
-      }
-      this.activeClients[socket.id].location = location
+      .then(res => res.json())
+      .then(json => {
+        const location = {
+          lgn: json.longitude,
+          lat: json.latitude,
+          city: json.city,
+          zipCode: json.zip_code,
+          regionCode: json.region_code,
+          country: json.country_code
+        }
+        this.activeClients[socket.id].location = location
 
-      // create base initiator if no avaliable initiator
-      // initiators avaliable, create receiver
-      if (this.serverStats.numInitiators < this.threshold) {
-        createBaseInitiator(socket, config)
-      } else {
-        createReceiverPeer(socket, this.activeClients, config, this.serverStats)
-      }
-    })
-    .catch(err => {
-      console.log(err)
-    })
+        // create base initiator if no avaliable initiator
+        // initiators avaliable, create receiver
+        if (this.serverStats.numInitiators < this.threshold) {
+          createBaseInitiator(socket, config)
+        } else {
+          createReceiverPeer(socket, this.activeClients, config, this.serverStats)
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
 
     // Initiator sent offer object to server. Store offer object to the client's respective object inside this.activeClients. Set this client to an initiator and update this.numInitiators count.
     socket.on('offer_to_server', message => {
@@ -126,15 +143,13 @@ function createReceiverPeer(socket, activeClients, config, serverStats) {
 // function to calculate distance
 // source: https://www.geodatasource.com/developers/javascript
 function distance(lat1, lon1, lat2, lon2) {
-	const radlat1 = Math.PI * lat1/180
-	const radlat2 = Math.PI * lat2/180
-	const theta = lon1-lon2
-	const radtheta = Math.PI * theta/180
-	let dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-	dist = Math.acos(dist)
-	dist = dist * 180/Math.PI
-	dist = dist * 60 * 1.1515
-	return dist
+  const radlat1 = Math.PI * lat1 / 180
+  const radlat2 = Math.PI * lat2 / 180
+  const theta = lon1 - lon2
+  const radtheta = Math.PI * theta / 180
+  let dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+  dist = Math.acos(dist)
+  dist = dist * 180 / Math.PI
+  dist = dist * 60 * 1.1515
+  return dist
 }
-
-module.exports = PeerConnect;

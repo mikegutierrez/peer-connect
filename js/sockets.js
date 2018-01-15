@@ -1,5 +1,4 @@
 const Peer = SimplePeer;
-const peerMethods = listeners;
 
 // peer configuration object from server
 let configuration = {};
@@ -33,6 +32,33 @@ function reportTime(time, currentOrTotal, domId) {
 // get img tag nodes
 let imageArray = document.getElementsByTagName('img');
 
+// establish/bind wrtc peer methods
+const peerMethods = function (peer) {
+  peer.on("error", err => {
+    console.log(err)
+  });
+
+  /* Signal is automatically called when a new peer is created with {initiator:true} parameter. This generates the offer object to be sent to the peer.
+  Upon receiving the offer object by the receiver, invoke p.signal with the offer object as its parameter. This will generate the answer object. Do the same with the host with the answer object. */
+  peer.on("signal", (data) => {
+    handleOnSignal(data, peerId)
+  });
+
+  // listener for when P2P is established. Ice candidates sent first, then media data itself.
+  peer.on('connect', () => {
+    handleOnConnect();
+  })
+
+  // listener for when data is being received
+  peer.on('data', function (data) {
+    handleOnData(data)
+  })
+
+  peer.on('close', function () {
+    console.log('P2P closed')
+    assetsDownloaded ? createInitiator() : createInitiator('base')
+  })
+};
 
 // Establish connection
 const socket = io.connect();
@@ -64,7 +90,7 @@ socket.on('create_receiver_peer', (initiatorData, assetTypes, foldLoading) => {
   // location data of peer to render on page for demo
   const location = initiatorData.location
   document.getElementById('peer_info').innerHTML +=
-  `<br>*    Received data from ${location.city}, ${location.regionCode}, ${location.country} ${location.zipCode};`;
+    `<br>*    Received data from ${location.city}, ${location.regionCode}, ${location.country} ${location.zipCode};`;
 })
 
 // answer object has arrived to the initiator. Connection will when the signal(message) is invoked.
@@ -75,7 +101,7 @@ socket.on('answer_to_initiator', (message, peerLocation) => {
 
   // location data of peer to render on page for demo
   document.getElementById('peer_info').innerHTML +=
-  `<br>*    Sent data to ${peerLocation.city}, ${peerLocation.regionCode}, ${peerLocation.country} ${peerLocation.zipCode};`;
+    `<br>*    Sent data to ${peerLocation.city}, ${peerLocation.regionCode}, ${peerLocation.country} ${peerLocation.zipCode};`;
 })
 
 // handles all signals
@@ -116,7 +142,7 @@ let foldCounter = 0;
 let otherCounter = 0;
 
 function loopImg() {
-  let returnFunc = function() {
+  let returnFunc = function () {
     console.log('this is firing!')
 
     if (otherCounter >= 1) return;
@@ -165,7 +191,7 @@ function handleOnData(data) {
     return;
   }
 
-  if (data.toString().slice(0,7) === 'test123') {
+  if (data.toString().slice(0, 7) === 'test123') {
     imageHeight = JSON.parse(data.toString().slice(7));
     imageHeight.forEach((element, idx) => {
       imageArray[idx].style.height = element + 'px';
